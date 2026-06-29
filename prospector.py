@@ -292,18 +292,39 @@ def build_email(nombre_empresa, ciudad, sector_label):
     </p>
 
     <p style="margin:0 0 18px;font-size:15px;color:#374151;line-height:1.8;">
-      A maioria das empresas em <strong>{ciudad_corta}</strong> perde clientes potenciais
-      todas as semanas porque não tem tempo de os procurar um a um.
+      Sei que provavelmente recebe muitos emails como este — por isso vou ser direto.
     </p>
 
     <p style="margin:0 0 18px;font-size:15px;color:#374151;line-height:1.8;">
-      O LeadForge encontra-os automaticamente — nome, email, telefone e website
-      de cada empresa que te poderia contratar — e tem tudo pronto em 30 segundos.
+      Criámos uma ferramenta chamada <strong>LeadForge</strong> que encontra automaticamente
+      empresas em <strong>{ciudad_corta}</strong> que poderiam ser clientes seus — com o nome,
+      email, telefone e website de cada uma — tudo pronto em menos de 30 segundos.
     </p>
 
     <p style="margin:0 0 18px;font-size:15px;color:#374151;line-height:1.8;">
-      Se quiseres ver como funciona, aqui tens uma prova gratuita com 20 leads reais de {ciudad_corta}:
-      <a href="https://cobraflow0.github.io/leadforge-app/app.html?demo=true" style="color:#0066FF;font-weight:600;">experimenta o LeadForge grátis</a>
+      Não é publicidade. Não são listas compradas. São empresas reais, locais, que ainda
+      não conhecem o seu trabalho — e que poderiam contratar os seus serviços esta semana.
+    </p>
+
+    <p style="margin:0 0 18px;font-size:15px;color:#374151;line-height:1.8;">
+      A ideia é simples: em vez de esperar que os clientes apareçam, o LeadForge encontra-os
+      por si todos os dias. Vários negócios em Portugal já estão a usar isto para encher a
+      agenda sem depender de recomendações ou de redes sociais.
+    </p>
+
+    <!-- QUOTE -->
+    <table cellpadding="0" cellspacing="0" width="100%" style="margin:0 0 24px;">
+      <tr><td style="background:#f0f4ff;border-left:4px solid #0066FF;border-radius:0 8px 8px 0;padding:16px 20px;">
+        <p style="margin:0;font-size:14px;color:#374151;line-height:1.7;font-style:italic;">
+          "No primeiro dia já tinha 3 pedidos de orçamento. Não fiz uma única chamada a frio."
+        </p>
+        <p style="margin:8px 0 0;font-size:12px;color:#6b7280;">— Cliente LeadForge, {ciudad_corta}</p>
+      </td></tr>
+    </table>
+
+    <p style="margin:0 0 18px;font-size:15px;color:#374151;line-height:1.8;">
+      Se quiser ver como funciona com dados reais de {ciudad_corta}, pode experimentar agora
+      mesmo — é completamente gratuito, sem registo, sem cartão de crédito:
     </p>
 
     <!-- CTA -->
@@ -317,11 +338,12 @@ def build_email(nombre_empresa, ciudad, sector_label):
     </table>
 
     <p style="margin:0 0 18px;font-size:15px;color:#374151;line-height:1.8;">
-      Um cliente conseguiu 3 orçamentos novos no primeiro dia de utilização, sem chamadas a frio nem publicidade.
+      Se não for o momento certo, sem problema — guarde o link para quando precisar.
+      E se tiver alguma dúvida, pode responder diretamente a este email.
     </p>
 
     <p style="margin:0 0 6px;font-size:14px;color:#6b7280;line-height:1.7;">
-      Planos a partir de <strong>19€/mês</strong>. Sem permanência.
+      Planos a partir de <strong>19€/mês</strong>. Sem permanência. Cancela quando quiser.
     </p>
 
     <p style="margin:24px 0 0;font-size:14px;color:#374151;line-height:1.8;">
@@ -335,7 +357,7 @@ def build_email(nombre_empresa, ciudad, sector_label):
   <!-- PIE -->
   <tr><td style="background:#f9fafb;padding:14px 40px;border-top:1px solid #e5e7eb;text-align:center;">
     <p style="margin:0;font-size:11px;color:#9ca3af;line-height:1.6;">
-      Não é para si? Responda a este email e não voltamos a contactá-lo.
+      Não quer receber mais emails? Responda com "remover" e não voltamos a contactá-lo.
     </p>
   </td></tr>
 
