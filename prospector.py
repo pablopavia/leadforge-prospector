@@ -81,10 +81,10 @@ TARGET_LABEL = {
 
 # 4 asuntos rotativos — rotan por día para A/B natural y mejor deliverability
 SUBJECTS = [
-    "Encontré 20 clientes potenciales para {nombre}",
-    "{nombre} — hay {sector} en {ciudad} que te buscan",
-    "20 leads en {ciudad} que podrían contratarte",
-    "{nombre}, ¿estás captando todos tus clientes en {ciudad}?",
+    "Clientes nuevos en {ciudad} — sin publicidad",
+    "{nombre}, hay contactos en {ciudad} esperándote",
+    "Cómo conseguir clientes en {ciudad} sin llamadas en frío",
+    "20 empresas en {ciudad} que podrían contratarte",
 ]
 
 # Dominios genéricos que no tienen inbox real
@@ -291,57 +291,67 @@ def build_email(nombre_empresa, ciudad, sector_label):
 <table width="560" cellpadding="0" cellspacing="0" style="background:#ffffff;border-radius:12px;overflow:hidden;box-shadow:0 2px 16px rgba(0,0,0,0.08);">
 
   <!-- CABECERA -->
-  <tr><td style="background:linear-gradient(135deg,#0066FF,#00C8FF);padding:24px 40px;">
-    <h1 style="margin:0;color:#fff;font-size:20px;font-weight:800;letter-spacing:-0.3px;">⚡ LeadForge</h1>
+  <tr><td style="background:linear-gradient(135deg,#0D1420,#1a2540);padding:24px 40px;">
+    <h1 style="margin:0;color:#fff;font-size:19px;font-weight:700;letter-spacing:-0.3px;">⚡ LeadForge</h1>
+    <p style="margin:4px 0 0;color:rgba(255,255,255,0.5);font-size:12px;">Generación automática de leads B2B</p>
   </td></tr>
 
   <!-- CUERPO -->
-  <tr><td style="padding:32px 40px 24px;">
+  <tr><td style="padding:36px 40px 28px;">
 
-    <p style="margin:0 0 20px;font-size:15px;color:#1a1a2e;">Hola,</p>
-
-    <p style="margin:0 0 16px;font-size:15px;color:#374151;line-height:1.75;">
-      Busqué <strong>{sector_label}</strong> en <strong>{ciudad_corta}</strong>
-      y encontré 20 empresas que probablemente necesitan lo que tú ofreces.
+    <p style="margin:0 0 22px;font-size:15px;color:#111827;line-height:1.7;">
+      Hola,
     </p>
 
-    <p style="margin:0 0 24px;font-size:15px;color:#374151;line-height:1.75;">
-      Te los dejo aquí, con email y teléfono, <strong>gratis y en 30 segundos</strong>:
+    <p style="margin:0 0 18px;font-size:15px;color:#374151;line-height:1.8;">
+      La mayoría de empresas en <strong>{ciudad_corta}</strong> pierden clientes potenciales
+      cada semana porque no tienen tiempo de buscarlos uno a uno.
+    </p>
+
+    <p style="margin:0 0 18px;font-size:15px;color:#374151;line-height:1.8;">
+      LeadForge los encuentra automáticamente — nombre, email, teléfono y web
+      de cada empresa que podría contratarte — y los tiene listos en 30 segundos.
+    </p>
+
+    <p style="margin:0 0 28px;font-size:15px;color:#374151;line-height:1.8;">
+      Aquí tienes <strong>20 leads de {ciudad_corta} gratis</strong> para que lo compruebes tú mismo:
     </p>
 
     <!-- CTA -->
-    <table cellpadding="0" cellspacing="0" style="margin:0 0 28px;">
-      <tr><td style="background:linear-gradient(135deg,#0066FF,#00C8FF);border-radius:8px;box-shadow:0 4px 14px rgba(0,102,255,0.35);">
+    <table cellpadding="0" cellspacing="0" style="margin:0 0 32px;">
+      <tr><td style="background:linear-gradient(135deg,#0066FF,#0052cc);border-radius:8px;box-shadow:0 4px 16px rgba(0,102,255,0.3);">
         <a href="https://cobraflow0.github.io/leadforge-app/app.html?demo=true"
-           style="display:inline-block;padding:14px 32px;color:#fff;text-decoration:none;font-weight:700;font-size:15px;letter-spacing:0.1px;">
-          Ver mis 20 leads gratis →
+           style="display:inline-block;padding:15px 36px;color:#fff;text-decoration:none;font-weight:700;font-size:15px;letter-spacing:0.2px;">
+          Ver mis leads gratis →
         </a>
       </td></tr>
     </table>
 
-    <p style="margin:0 0 8px;font-size:14px;color:#6b7280;line-height:1.6;">
-      Si quieres más, LeadForge encuentra hasta <strong>1.000 leads</strong> por búsqueda
-      en cualquier ciudad y sector — con campaña de email incluida.
+    <!-- PRUEBA SOCIAL -->
+    <table cellpadding="0" cellspacing="0" width="100%" style="margin:0 0 28px;background:#f0f7ff;border-left:3px solid #0066FF;border-radius:0 6px 6px 0;">
+      <tr><td style="padding:14px 18px;">
+        <p style="margin:0;font-size:13px;color:#1e40af;line-height:1.7;">
+          <strong>Resultado real:</strong> Un cliente consiguió 3 presupuestos nuevos
+          el primer día de uso — sin llamadas en frío, sin publicidad, sin agencias.
+        </p>
+      </td></tr>
+    </table>
+
+    <p style="margin:0 0 6px;font-size:14px;color:#6b7280;line-height:1.7;">
+      Planes desde <strong>19€/mes</strong>. Sin permanencia.
     </p>
 
-    <p style="margin:24px 0 0;font-size:14px;color:#374151;">
+    <p style="margin:24px 0 0;font-size:14px;color:#374151;line-height:1.8;">
       Un saludo,<br>
       <strong>Aquiles</strong><br>
-      <span style="color:#6b7280;font-size:13px;">LeadForge · hola@leadforge.es</span>
-    </p>
-
-    <!-- P.D. -->
-    <p style="margin:20px 0 0;font-size:13px;color:#6b7280;border-top:1px solid #f3f4f6;padding-top:16px;line-height:1.6;">
-      <strong>P.D.</strong> Un cliente de {ciudad_corta} encontró 3 presupuestos nuevos
-      el mismo día que empezó a usar LeadForge. Sin llamadas en frío, sin publicidad.
+      <span style="color:#9ca3af;font-size:13px;">Fundador · LeadForge · hola@leadforge.es</span>
     </p>
 
   </td></tr>
 
   <!-- PIE -->
   <tr><td style="background:#f9fafb;padding:14px 40px;border-top:1px solid #e5e7eb;text-align:center;">
-    <p style="margin:0;font-size:11px;color:#9ca3af;">
-      Planes desde 19€/mes · Sin permanencia · Cancela cuando quieras<br>
+    <p style="margin:0;font-size:11px;color:#9ca3af;line-height:1.6;">
       ¿No es para ti? Responde a este email y no volvemos a escribirte.
     </p>
   </td></tr>
