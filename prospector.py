@@ -18,6 +18,7 @@ BREVO_API_KEY  = os.environ["BREVO_API_KEY"]
 GMAPS_API_KEY  = os.environ["GMAPS_API_KEY"]
 MY_EMAIL       = os.environ.get("MY_EMAIL", "aquilesgbi@gmail.com")
 SENT_FILE      = "sent_emails.json"
+CRM_FILE       = "crm_data.json"
 MAX_PER_RUN    = 200
 
 HEADERS = {
@@ -26,7 +27,6 @@ HEADERS = {
     "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
 }
 
-# Rotación diaria de ciudades — cada día busca en una ciudad diferente
 CIUDADES = [
     "Madrid, España",
     "Barcelona, España",
@@ -65,7 +65,6 @@ TARGETS = [
     "empresa de telecomunicaciones",
 ]
 
-# Etiqueta legible para cada target — se usa en el email personalizado
 TARGET_LABEL = {
     "agencia de marketing digital":   "agencias de marketing digital",
     "agencia inmobiliaria":            "agencias inmobiliarias",
@@ -79,7 +78,6 @@ TARGET_LABEL = {
     "empresa de telecomunicaciones":   "empresas de telecomunicaciones",
 }
 
-# 4 asuntos rotativos — rotan por día para A/B natural y mejor deliverability
 SUBJECTS = [
     "Clientes nuevos en {ciudad} — sin publicidad",
     "{nombre}, hay contactos en {ciudad} esperándote",
@@ -87,7 +85,6 @@ SUBJECTS = [
     "20 empresas en {ciudad} que podrían contratarte",
 ]
 
-# Dominios genéricos que no tienen inbox real
 DOMINIOS_INVALIDOS = {
     "facebook.com", "instagram.com", "twitter.com", "linkedin.com",
     "youtube.com", "google.com", "wix.com", "wordpress.com",
@@ -96,6 +93,15 @@ DOMINIOS_INVALIDOS = {
 }
 
 _verify_cache = {}
+
+
+# ══════════════════════════════════════════════════════════
+# CIUDADES DE HOY — Madrid siempre + 3 rotando
+# ══════════════════════════════════════════════════════════
+def get_ciudades_hoy(dia):
+    resto = [c for c in CIUDADES if c != "Madrid, España"]
+    adicionales = [resto[(dia + i) % len(resto)] for i in range(3)]
+    return ["Madrid, España"] + adicionales
 
 
 # ══════════════════════════════════════════════════════════
@@ -111,6 +117,18 @@ def load_sent():
 def save_sent(sent):
     with open(SENT_FILE, "w") as f:
         json.dump(list(sent), f)
+
+
+def load_crm():
+    if os.path.exists(CRM_FILE):
+        with open(CRM_FILE) as f:
+            return json.load(f)
+    return []
+
+
+def save_crm(data):
+    with open(CRM_FILE, "w") as f:
+        json.dump(data, f, ensure_ascii=False, indent=2)
 
 
 # ══════════════════════════════════════════════════════════
@@ -134,9 +152,7 @@ def dominio_valido(domain):
 _EMAIL_SKIP = {"noreply", "no-reply", "donotreply", "webmaster", "bounce", "mailer"}
 
 def _parse_emails_from_html(html):
-    """Extrae emails de HTML — prioriza mailto:, luego regex general."""
     emails = []
-    # 1. mailto: links (más fiables — el propio negocio los puso)
     mailtos = re.findall(r'href=["\']mailto:([^"\'?&\s>]+)', html, re.IGNORECASE)
     for m in mailtos:
         m = m.strip().lower()
@@ -145,8 +161,6 @@ def _parse_emails_from_html(html):
                 emails.append(m)
     if emails:
         return emails
-
-    # 2. Regex sobre texto plano (fallback)
     found = re.findall(r'[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}', html)
     for f in found:
         f = f.lower()
@@ -156,11 +170,6 @@ def _parse_emails_from_html(html):
 
 
 def get_real_email(website):
-    """
-    Visita la web del negocio (homepage + /contacto + /contact)
-    y devuelve el primer email real que encuentre.
-    Devuelve None si no encuentra nada.
-    """
     paths = ["", "/contacto", "/contact", "/sobre-nosotros", "/about"]
     for path in paths[:3]:
         url = website.rstrip("/") + path
@@ -180,18 +189,11 @@ def get_real_email(website):
 # VERIFICACIÓN DNS + SMTP
 # ══════════════════════════════════════════════════════════
 def verify_email(email):
-    """
-    Verifica que el email probablemente existe.
-    Paso 1 — DNS: el dominio tiene registros MX (servidor de correo).
-    Paso 2 — SMTP: conectar y preguntar si el buzón existe.
-    Si el puerto 25 está bloqueado (común en cloud), confía en el DNS.
-    """
     if email in _verify_cache:
         return _verify_cache[email]
 
     domain = email.split("@")[-1]
 
-    # Paso 1 — DNS
     try:
         mx_records = dns.resolver.resolve(domain, "MX", lifetime=3)
         mx_hosts = sorted([(r.preference, str(r.exchange).rstrip(".")) for r in mx_records])
@@ -202,11 +204,9 @@ def verify_email(email):
         _verify_cache[email] = False
         return False
     except Exception:
-        # Timeout de DNS — aceptamos el email
         _verify_cache[email] = True
         return True
 
-    # Paso 2 — SMTP
     for _, mx_host in mx_hosts[:2]:
         try:
             with smtplib.SMTP(timeout=5) as smtp:
@@ -219,11 +219,10 @@ def verify_email(email):
                 _verify_cache[email] = result
                 return result
         except (socket.timeout, socket.error, smtplib.SMTPConnectError):
-            continue  # puerto 25 bloqueado — prueba siguiente MX
+            continue
         except Exception:
             continue
 
-    # SMTP inalcanzable — el dominio tiene MX, confiamos en eso
     _verify_cache[email] = True
     return True
 
@@ -265,8 +264,9 @@ def search_gmaps(query, ciudad):
                 "nombre":  p.get("name", ""),
                 "web":     website,
                 "domain":  domain,
-                "email":   f"info@{domain}",  # fallback — se enriquece después
+                "email":   f"info@{domain}",
                 "target":  query,
+                "ciudad":  ciudad,
             })
             time.sleep(0.2)
         next_token = r.get("next_page_token")
@@ -281,7 +281,7 @@ def search_gmaps(query, ciudad):
 # EMAIL HTML
 # ══════════════════════════════════════════════════════════
 def build_email(nombre_empresa, ciudad, sector_label):
-    ciudad_corta = ciudad.split(",")[0]  # "Madrid, España" → "Madrid"
+    ciudad_corta = ciudad.split(",")[0]
     return f"""<!DOCTYPE html>
 <html lang="es"><head><meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1"></head>
@@ -383,7 +383,10 @@ def send_email(to_email, nombre_empresa, ciudad, sector_label, dia):
         json=payload,
         timeout=10,
     )
-    return r.status_code in (200, 201)
+    if r.status_code in (200, 201):
+        message_id = r.json().get("messageId", "")
+        return True, message_id
+    return False, None
 
 
 # ══════════════════════════════════════════════════════════
@@ -391,21 +394,24 @@ def send_email(to_email, nombre_empresa, ciudad, sector_label, dia):
 # ══════════════════════════════════════════════════════════
 def main():
     dia = datetime.now().timetuple().tm_yday
-    ciudad = CIUDADES[dia % len(CIUDADES)]
-    print(f"[prospector] Ciudad de hoy: {ciudad}")
+    ciudades_hoy = get_ciudades_hoy(dia)
+    print(f"[prospector] Ciudades de hoy: {', '.join(ciudades_hoy)}")
 
-    sent = load_sent()
+    sent    = load_sent()
+    crm     = load_crm()
+    crm_ids = {e["email"] for e in crm}
     print(f"[prospector] {len(sent)} emails ya enviados anteriormente")
 
-    # 1. Recoger candidatos de Google Maps
+    # 1. Recoger candidatos de Google Maps en todas las ciudades
     all_leads = []
-    for target in TARGETS:
-        print(f"[prospector] Buscando: {target} en {ciudad}")
-        leads = search_gmaps(target, ciudad)
-        all_leads.extend(leads)
-        time.sleep(1)
+    for ciudad in ciudades_hoy:
+        for target in TARGETS:
+            print(f"[prospector] Buscando: {target} en {ciudad}")
+            leads = search_gmaps(target, ciudad)
+            all_leads.extend(leads)
+            time.sleep(1)
 
-    # Dedup por dominio (no por email adivinado, porque el email real puede variar)
+    # Dedup por dominio
     seen_domains = set()
     unique_leads = []
     for l in all_leads:
@@ -413,7 +419,7 @@ def main():
             seen_domains.add(l["domain"])
             unique_leads.append(l)
 
-    # Filtrar ya enviados (por dominio — evita reenviar aunque cambie el alias)
+    # Filtrar ya enviados por dominio
     nuevos = [
         l for l in unique_leads
         if l["domain"] not in {e.split("@")[-1] for e in sent}
@@ -431,8 +437,8 @@ def main():
 
         nombre  = lead["nombre"]
         website = lead["web"]
+        ciudad  = lead["ciudad"]
 
-        # Intentar obtener email real de la web
         real = get_real_email(website)
         if real:
             lead["email"] = real
@@ -441,32 +447,43 @@ def main():
         else:
             print(f"  ↩  Usando info@: {lead['email']} ({nombre})")
 
-        # Verificar que el email existe (DNS + SMTP si disponible)
         if not verify_email(lead["email"]):
             rechazados_dns += 1
             print(f"  ⛔ {lead['email']} — no existe, descartado")
             continue
 
-        # Evitar reenvío si el email real ya estaba en sent
         if lead["email"] in sent:
             continue
 
         sector_label = TARGET_LABEL.get(lead.get("target", ""), "empresas")
-        ok = send_email(lead["email"], nombre, ciudad, sector_label, dia)
+        ok, message_id = send_email(lead["email"], nombre, ciudad, sector_label, dia)
         if ok:
             sent.add(lead["email"])
             enviados += 1
             print(f"  ✅ {lead['email']} ({nombre})")
+            if lead["email"] not in crm_ids:
+                crm.append({
+                    "email":     lead["email"],
+                    "nombre":    nombre,
+                    "web":       website,
+                    "ciudad":    ciudad.split(",")[0],
+                    "sector":    sector_label,
+                    "fecha":     datetime.now().strftime("%Y-%m-%d"),
+                    "messageId": message_id or "",
+                    "status":    "sent",
+                })
+                crm_ids.add(lead["email"])
         else:
             print(f"  ❌ {lead['email']} — error Brevo")
         time.sleep(0.5)
 
     save_sent(sent)
+    save_crm(crm)
     print(f"\n[prospector] Fin — {enviados} enviados | {emails_reales} emails reales | {rechazados_dns} descartados por DNS")
 
-    # Resumen por email
+    ciudad_str = ", ".join(c.split(",")[0] for c in ciudades_hoy)
     resumen_html = f"""
-    <p>Hoy el prospector buscó en <b>{ciudad}</b>.</p>
+    <p>Hoy el prospector buscó en <b>{ciudad_str}</b>.</p>
     <ul>
       <li>✅ Enviados: <b>{enviados}</b></li>
       <li>📧 Emails reales encontrados en web: <b>{emails_reales}</b></li>
@@ -481,7 +498,7 @@ def main():
             "sender":      {"name": "LeadForge Prospector", "email": "hola@leadforge.es"},
             "replyTo":     {"email": MY_EMAIL},
             "to":          [{"email": MY_EMAIL}],
-            "subject":     f"[Prospector] {enviados} emails enviados — {ciudad}",
+            "subject":     f"[Prospector] {enviados} emails enviados — {ciudad_str}",
             "htmlContent": resumen_html,
         },
         timeout=10,

@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LeadForge CRM</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Helvetica Neue', Arial, sans-serif;
+      background: #0f1117;
+      color: #e5e7eb;
+      min-height: 100vh;
+    }
+
+    header {
+      background: linear-gradient(135deg, #0D1420, #1a2540);
+      padding: 20px 32px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      border-bottom: 1px solid rgba(255,255,255,0.08);
+    }
+
+    header h1 { font-size: 20px; font-weight: 700; color: #fff; }
+    header span { font-size: 13px; color: rgba(255,255,255,0.4); }
+
+    .container { max-width: 1200px; margin: 0 auto; padding: 32px 24px; }
+
+    /* STATS */
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+      gap: 16px;
+      margin-bottom: 32px;
+    }
+
+    .stat-card {
+      background: #1a1f2e;
+      border: 1px solid rgba(255,255,255,0.07);
+      border-radius: 12px;
+      padding: 20px;
+      text-align: center;
+    }
+
+    .stat-card .number {
+      font-size: 32px;
+      font-weight: 700;
+      line-height: 1;
+      margin-bottom: 6px;
+    }
+
+    .stat-card .label { font-size: 12px; color: #6b7280; text-transform: uppercase; letter-spacing: 0.5px; }
+
+    .stat-card.total .number  { color: #60a5fa; }
+    .stat-card.opened .number { color: #34d399; }
+    .stat-card.bounced .number{ color: #f87171; }
+    .stat-card.pending .number{ color: #fbbf24; }
+    .stat-card.delivered .number { color: #a78bfa; }
+
+    /* FILTROS */
+    .filters {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin-bottom: 20px;
+      align-items: center;
+    }
+
+    .filters select, .filters input {
+      background: #1a1f2e;
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 8px;
+      color: #e5e7eb;
+      padding: 8px 14px;
+      font-size: 13px;
+      outline: none;
+    }
+
+    .filters select:focus, .filters input:focus {
+      border-color: #0066FF;
+    }
+
+    .filters input { min-width: 200px; }
+
+    .filters label { font-size: 13px; color: #6b7280; }
+
+    /* TABLA */
+    .table-wrap {
+      background: #1a1f2e;
+      border: 1px solid rgba(255,255,255,0.07);
+      border-radius: 12px;
+      overflow: hidden;
+    }
+
+    table { width: 100%; border-collapse: collapse; }
+
+    thead th {
+      background: rgba(255,255,255,0.04);
+      padding: 12px 16px;
+      text-align: left;
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: #6b7280;
+      border-bottom: 1px solid rgba(255,255,255,0.07);
+    }
+
+    tbody tr {
+      border-bottom: 1px solid rgba(255,255,255,0.04);
+      transition: background 0.15s;
+    }
+
+    tbody tr:last-child { border-bottom: none; }
+    tbody tr:hover { background: rgba(255,255,255,0.03); }
+
+    td {
+      padding: 12px 16px;
+      font-size: 13px;
+      vertical-align: middle;
+    }
+
+    td a { color: #60a5fa; text-decoration: none; }
+    td a:hover { text-decoration: underline; }
+
+    .badge {
+      display: inline-block;
+      padding: 3px 10px;
+      border-radius: 20px;
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.3px;
+    }
+
+    .badge-sent      { background: rgba(251,191,36,0.15);  color: #fbbf24; }
+    .badge-delivered { background: rgba(167,139,250,0.15); color: #a78bfa; }
+    .badge-opened    { background: rgba(52,211,153,0.15);  color: #34d399; }
+    .badge-bounced   { background: rgba(248,113,113,0.15); color: #f87171; }
+
+    .empty {
+      text-align: center;
+      padding: 60px 20px;
+      color: #4b5563;
+      font-size: 14px;
+    }
+
+    .count-info {
+      font-size: 12px;
+      color: #6b7280;
+      margin-bottom: 12px;
+    }
+
+    .refresh-btn {
+      background: #0066FF;
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      padding: 8px 16px;
+      font-size: 13px;
+      cursor: pointer;
+      font-weight: 600;
+    }
+
+    .refresh-btn:hover { background: #0052cc; }
+  </style>
+</head>
+<body>
+
+<header>
+  <div>
+    <h1>⚡ LeadForge CRM</h1>
+    <span>Seguimiento de emails del prospector</span>
+  </div>
+  <div style="margin-left:auto;">
+    <button class="refresh-btn" onclick="loadData()">↻ Actualizar</button>
+  </div>
+</header>
+
+<div class="container">
+
+  <!-- STATS -->
+  <div class="stats">
+    <div class="stat-card total">
+      <div class="number" id="stat-total">—</div>
+      <div class="label">Total enviados</div>
+    </div>
+    <div class="stat-card opened">
+      <div class="number" id="stat-opened">—</div>
+      <div class="label">Abiertos</div>
+    </div>
+    <div class="stat-card delivered">
+      <div class="number" id="stat-delivered">—</div>
+      <div class="label">Entregados</div>
+    </div>
+    <div class="stat-card bounced">
+      <div class="number" id="stat-bounced">—</div>
+      <div class="label">Rebotados</div>
+    </div>
+    <div class="stat-card pending">
+      <div class="number" id="stat-pending">—</div>
+      <div class="label">Pendientes</div>
+    </div>
+  </div>
+
+  <!-- FILTROS -->
+  <div class="filters">
+    <label>Filtrar:</label>
+    <input type="text" id="search" placeholder="Buscar empresa, email..." oninput="render()">
+    <select id="filter-status" onchange="render()">
+      <option value="">Todos los estados</option>
+      <option value="sent">Pendiente</option>
+      <option value="delivered">Entregado</option>
+      <option value="opened">Abierto</option>
+      <option value="bounced">Rebotado</option>
+    </select>
+    <select id="filter-city" onchange="render()">
+      <option value="">Todas las ciudades</option>
+    </select>
+    <select id="filter-sector" onchange="render()">
+      <option value="">Todos los sectores</option>
+    </select>
+  </div>
+
+  <div class="count-info" id="count-info"></div>
+
+  <!-- TABLA -->
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>Empresa</th>
+          <th>Email</th>
+          <th>Ciudad</th>
+          <th>Sector</th>
+          <th>Fecha</th>
+          <th>Estado</th>
+        </tr>
+      </thead>
+      <tbody id="table-body">
+        <tr><td colspan="6" class="empty">Cargando datos…</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+</div>
+
+<script>
+  const DATA_URL = "https://raw.githubusercontent.com/Cobraflow0/leadforge-prospector/main/crm_data.json";
+  let allData = [];
+
+  const STATUS_LABEL = {
+    sent:      "Pendiente",
+    delivered: "Entregado",
+    opened:    "Abierto",
+    bounced:   "Rebotado",
+  };
+
+  async function loadData() {
+    document.getElementById("table-body").innerHTML =
+      '<tr><td colspan="6" class="empty">Cargando…</td></tr>';
+    try {
+      const r = await fetch(DATA_URL + "?t=" + Date.now());
+      allData = await r.json();
+      allData = allData.reverse(); // más recientes primero
+      populateFilters();
+      updateStats();
+      render();
+    } catch (e) {
+      document.getElementById("table-body").innerHTML =
+        '<tr><td colspan="6" class="empty">Error cargando datos. Asegúrate de tener acceso al repo.</td></tr>';
+    }
+  }
+
+  function populateFilters() {
+    const cities   = [...new Set(allData.map(d => d.ciudad).filter(Boolean))].sort();
+    const sectors  = [...new Set(allData.map(d => d.sector).filter(Boolean))].sort();
+
+    const cityEl   = document.getElementById("filter-city");
+    const sectorEl = document.getElementById("filter-sector");
+
+    cityEl.innerHTML   = '<option value="">Todas las ciudades</option>'   + cities.map(c  => `<option>${c}</option>`).join("");
+    sectorEl.innerHTML = '<option value="">Todos los sectores</option>' + sectors.map(s => `<option>${s}</option>`).join("");
+  }
+
+  function updateStats() {
+    const counts = { sent: 0, delivered: 0, opened: 0, bounced: 0 };
+    allData.forEach(d => { if (d.status in counts) counts[d.status]++; });
+
+    document.getElementById("stat-total").textContent     = allData.length;
+    document.getElementById("stat-opened").textContent    = counts.opened;
+    document.getElementById("stat-delivered").textContent = counts.delivered;
+    document.getElementById("stat-bounced").textContent   = counts.bounced;
+    document.getElementById("stat-pending").textContent   = counts.sent;
+  }
+
+  function render() {
+    const search = document.getElementById("search").value.toLowerCase();
+    const status = document.getElementById("filter-status").value;
+    const city   = document.getElementById("filter-city").value;
+    const sector = document.getElementById("filter-sector").value;
+
+    const filtered = allData.filter(d => {
+      if (status && d.status !== status) return false;
+      if (city   && d.ciudad  !== city)  return false;
+      if (sector && d.sector  !== sector) return false;
+      if (search) {
+        const hay = `${d.nombre} ${d.email} ${d.ciudad} ${d.sector}`.toLowerCase();
+        if (!hay.includes(search)) return false;
+      }
+      return true;
+    });
+
+    document.getElementById("count-info").textContent =
+      `Mostrando ${filtered.length} de ${allData.length} contactos`;
+
+    if (!filtered.length) {
+      document.getElementById("table-body").innerHTML =
+        '<tr><td colspan="6" class="empty">No hay resultados con estos filtros.</td></tr>';
+      return;
+    }
+
+    document.getElementById("table-body").innerHTML = filtered.map(d => {
+      const badgeClass = `badge badge-${d.status || "sent"}`;
+      const label      = STATUS_LABEL[d.status] || d.status || "—";
+      const web        = d.web ? `<a href="${d.web}" target="_blank">${d.nombre || "—"}</a>` : (d.nombre || "—");
+      return `<tr>
+        <td>${web}</td>
+        <td><a href="mailto:${d.email}">${d.email}</a></td>
+        <td>${d.ciudad || "—"}</td>
+        <td style="color:#9ca3af;font-size:12px;">${d.sector || "—"}</td>
+        <td style="color:#6b7280;font-size:12px;">${d.fecha || "—"}</td>
+        <td><span class="${badgeClass}">${label}</span></td>
+      </tr>`;
+    }).join("");
+  }
+
+  loadData();
+</script>
+</body>
+</html>
