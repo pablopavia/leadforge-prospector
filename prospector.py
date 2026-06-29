@@ -349,7 +349,7 @@ def build_email(nombre_empresa, ciudad, sector_label):
     <p style="margin:24px 0 0;font-size:14px;color:#374151;line-height:1.8;">
       Um abraço,<br>
       <strong>Pablo</strong><br>
-      <span style="color:#9ca3af;font-size:13px;">LeadForge · hola@leadforge.es</span>
+      <span style="color:#9ca3af;font-size:13px;">LeadForge · pablopavia118@gmail.com</span>
     </p>
 
   </td></tr>
@@ -380,7 +380,7 @@ def send_email(to_email, nombre_empresa, ciudad, sector_label, dia):
         ciudad=ciudad_corta,
     )
     payload = {
-        "sender":      {"name": "Pablo — LeadForge", "email": "hola@leadforge.es"},
+        "sender":      {"name": "Pablo — LeadForge", "email": "pablopavia118@gmail.com"},
         "replyTo":     {"email": MY_EMAIL},
         "to":          [{"email": to_email}],
         "subject":     subject,
@@ -488,7 +488,7 @@ def main():
         "https://api.brevo.com/v3/smtp/email",
         headers={"api-key": BREVO_API_KEY, "Content-Type": "application/json"},
         json={
-            "sender":      {"name": "LeadForge Prospector", "email": "hola@leadforge.es"},
+            "sender":      {"name": "LeadForge Prospector", "email": "pablopavia118@gmail.com"},
             "replyTo":     {"email": MY_EMAIL},
             "to":          [{"email": MY_EMAIL}],
             "subject":     f"[Prospector] {enviados} emails enviados — {ciudad}",
