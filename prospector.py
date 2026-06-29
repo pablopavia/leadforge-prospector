@@ -65,6 +65,28 @@ TARGETS = [
     "empresa de telecomunicaciones",
 ]
 
+# Etiqueta legible para cada target — se usa en el email personalizado
+TARGET_LABEL = {
+    "agencia de marketing digital":   "agencias de marketing digital",
+    "agencia inmobiliaria":            "agencias inmobiliarias",
+    "correduría de seguros":           "corredurías de seguros",
+    "consultoría de negocio":          "consultoras de negocio",
+    "asesoría fiscal":                 "asesorías fiscales",
+    "academia de formación empresarial": "academias de formación",
+    "empresa de software B2B":         "empresas de software B2B",
+    "agencia de publicidad":           "agencias de publicidad",
+    "gestoría administrativa":         "gestorías administrativas",
+    "empresa de telecomunicaciones":   "empresas de telecomunicaciones",
+}
+
+# 4 asuntos rotativos — rotan por día para A/B natural y mejor deliverability
+SUBJECTS = [
+    "Encontré 20 clientes potenciales para {nombre}",
+    "{nombre} — hay {sector} en {ciudad} que te buscan",
+    "20 leads en {ciudad} que podrían contratarte",
+    "{nombre}, ¿estás captando todos tus clientes en {ciudad}?",
+]
+
 # Dominios genéricos que no tienen inbox real
 DOMINIOS_INVALIDOS = {
     "facebook.com", "instagram.com", "twitter.com", "linkedin.com",
@@ -244,6 +266,7 @@ def search_gmaps(query, ciudad):
                 "web":     website,
                 "domain":  domain,
                 "email":   f"info@{domain}",  # fallback — se enriquece después
+                "target":  query,
             })
             time.sleep(0.2)
         next_token = r.get("next_page_token")
@@ -257,51 +280,72 @@ def search_gmaps(query, ciudad):
 # ══════════════════════════════════════════════════════════
 # EMAIL HTML
 # ══════════════════════════════════════════════════════════
-def build_email(nombre_empresa):
+def build_email(nombre_empresa, ciudad, sector_label):
+    ciudad_corta = ciudad.split(",")[0]  # "Madrid, España" → "Madrid"
     return f"""<!DOCTYPE html>
-<html lang="es"><head><meta charset="UTF-8"></head>
+<html lang="es"><head><meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1"></head>
 <body style="margin:0;padding:0;background:#f4f6f9;font-family:'Helvetica Neue',Arial,sans-serif;">
-<table width="100%" cellpadding="0" cellspacing="0" style="background:#f4f6f9;padding:40px 20px;">
+<table width="100%" cellpadding="0" cellspacing="0" style="background:#f4f6f9;padding:40px 16px;">
 <tr><td align="center">
 <table width="560" cellpadding="0" cellspacing="0" style="background:#ffffff;border-radius:12px;overflow:hidden;box-shadow:0 2px 16px rgba(0,0,0,0.08);">
-  <tr><td style="background:linear-gradient(135deg,#0066FF,#00C8FF);padding:28px 40px;">
-    <h1 style="margin:0;color:#fff;font-size:22px;font-weight:800;">⚡ LeadForge</h1>
-    <p style="margin:6px 0 0;color:rgba(255,255,255,0.85);font-size:14px;">Generación automática de leads para empresas españolas</p>
+
+  <!-- CABECERA -->
+  <tr><td style="background:linear-gradient(135deg,#0066FF,#00C8FF);padding:24px 40px;">
+    <h1 style="margin:0;color:#fff;font-size:20px;font-weight:800;letter-spacing:-0.3px;">⚡ LeadForge</h1>
   </td></tr>
-  <tr><td style="padding:32px 40px;">
-    <p style="margin:0 0 16px;font-size:16px;color:#1a1a2e;">Hola, equipo de {nombre_empresa}</p>
-    <p style="margin:0 0 16px;font-size:15px;color:#4a5568;line-height:1.7;">
-      Te escribo porque creo que <strong>LeadForge</strong> puede ser útil para tu empresa.
+
+  <!-- CUERPO -->
+  <tr><td style="padding:32px 40px 24px;">
+
+    <p style="margin:0 0 20px;font-size:15px;color:#1a1a2e;">Hola,</p>
+
+    <p style="margin:0 0 16px;font-size:15px;color:#374151;line-height:1.75;">
+      Busqué <strong>{sector_label}</strong> en <strong>{ciudad_corta}</strong>
+      y encontré 20 empresas que probablemente necesitan lo que tú ofreces.
     </p>
-    <p style="margin:0 0 16px;font-size:15px;color:#4a5568;line-height:1.7;">
-      LeadForge busca automáticamente contactos de negocios en Google Maps, directorios y otras fuentes,
-      y lanza campañas de email personalizadas en minutos.
+
+    <p style="margin:0 0 24px;font-size:15px;color:#374151;line-height:1.75;">
+      Te los dejo aquí, con email y teléfono, <strong>gratis y en 30 segundos</strong>:
     </p>
-    <ul style="margin:0 0 20px;padding-left:20px;color:#4a5568;font-size:15px;line-height:2;">
-      <li>Hasta <strong>1.000 leads</strong> por búsqueda con email y teléfono</li>
-      <li>Excel profesional con scoring de calidad automático</li>
-      <li>Campañas de cold email con follow-up automático</li>
-      <li>45+ ciudades españolas · 15 sectores B2B</li>
-    </ul>
-    <p style="margin:0 0 24px;font-size:15px;color:#4a5568;line-height:1.7;">
-      Nuestro primer cliente consiguió <strong>3 presupuestos en su primer día</strong> de uso.
-    </p>
-    <table cellpadding="0" cellspacing="0" style="margin:0 auto 24px;">
-      <tr><td style="background:linear-gradient(135deg,#0066FF,#00C8FF);border-radius:8px;">
+
+    <!-- CTA -->
+    <table cellpadding="0" cellspacing="0" style="margin:0 0 28px;">
+      <tr><td style="background:linear-gradient(135deg,#0066FF,#00C8FF);border-radius:8px;box-shadow:0 4px 14px rgba(0,102,255,0.35);">
         <a href="https://cobraflow0.github.io/leadforge-app/app.html?demo=true"
-           style="display:inline-block;padding:13px 28px;color:#fff;text-decoration:none;font-weight:700;font-size:15px;">
-          Prueba LeadForge gratis — busca tus leads →
+           style="display:inline-block;padding:14px 32px;color:#fff;text-decoration:none;font-weight:700;font-size:15px;letter-spacing:0.1px;">
+          Ver mis 20 leads gratis →
         </a>
       </td></tr>
     </table>
-    <p style="margin:0;font-size:13px;color:#7a8ba0;text-align:center;">
+
+    <p style="margin:0 0 8px;font-size:14px;color:#6b7280;line-height:1.6;">
+      Si quieres más, LeadForge encuentra hasta <strong>1.000 leads</strong> por búsqueda
+      en cualquier ciudad y sector — con campaña de email incluida.
+    </p>
+
+    <p style="margin:24px 0 0;font-size:14px;color:#374151;">
+      Un saludo,<br>
+      <strong>Aquiles</strong><br>
+      <span style="color:#6b7280;font-size:13px;">LeadForge · hola@leadforge.es</span>
+    </p>
+
+    <!-- P.D. -->
+    <p style="margin:20px 0 0;font-size:13px;color:#6b7280;border-top:1px solid #f3f4f6;padding-top:16px;line-height:1.6;">
+      <strong>P.D.</strong> Un cliente de {ciudad_corta} encontró 3 presupuestos nuevos
+      el mismo día que empezó a usar LeadForge. Sin llamadas en frío, sin publicidad.
+    </p>
+
+  </td></tr>
+
+  <!-- PIE -->
+  <tr><td style="background:#f9fafb;padding:14px 40px;border-top:1px solid #e5e7eb;text-align:center;">
+    <p style="margin:0;font-size:11px;color:#9ca3af;">
       Planes desde 19€/mes · Sin permanencia · Cancela cuando quieras<br>
-      ¿No es para ti? Responde a este email y no volvemos a escribir.
+      ¿No es para ti? Responde a este email y no volvemos a escribirte.
     </p>
   </td></tr>
-  <tr><td style="background:#f8fafc;padding:14px 40px;border-top:1px solid #e2e8f0;text-align:center;">
-    <p style="margin:0;font-size:11px;color:#a0aec0;">LeadForge · leadforge.es · hola@leadforge.es</p>
-  </td></tr>
+
 </table>
 </td></tr>
 </table>
@@ -311,13 +355,21 @@ def build_email(nombre_empresa):
 # ══════════════════════════════════════════════════════════
 # ENVÍO
 # ══════════════════════════════════════════════════════════
-def send_email(to_email, nombre_empresa):
+def send_email(to_email, nombre_empresa, ciudad, sector_label, dia):
+    nombre_corto = nombre_empresa.split()[0] if nombre_empresa else "equipo"
+    ciudad_corta = ciudad.split(",")[0]
+    subject_tpl  = SUBJECTS[dia % len(SUBJECTS)]
+    subject = subject_tpl.format(
+        nombre=nombre_corto,
+        sector=sector_label,
+        ciudad=ciudad_corta,
+    )
     payload = {
         "sender":      {"name": "Aquiles — LeadForge", "email": "hola@leadforge.es"},
         "replyTo":     {"email": MY_EMAIL},
         "to":          [{"email": to_email}],
-        "subject":     f"¿LeadForge puede ayudar a {nombre_empresa}?",
-        "htmlContent": build_email(nombre_empresa),
+        "subject":     subject,
+        "htmlContent": build_email(nombre_empresa, ciudad, sector_label),
         "tags":        ["prospector"],
     }
     r = requests.post(
@@ -394,7 +446,8 @@ def main():
         if lead["email"] in sent:
             continue
 
-        ok = send_email(lead["email"], nombre)
+        sector_label = TARGET_LABEL.get(lead.get("target", ""), "empresas")
+        ok = send_email(lead["email"], nombre, ciudad, sector_label, dia)
         if ok:
             sent.add(lead["email"])
             enviados += 1
