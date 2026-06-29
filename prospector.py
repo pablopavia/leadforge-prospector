@@ -1,23 +1,48 @@
 """
 LeadForge Prospector — standalone script
-Busca empresas en Madrid que puedan comprar LeadForge y les manda un email.
-Corre cada semana via GitHub Actions. No tiene nada que ver con la app LeadForge.
+Busca empresas en ciudades españolas y les manda un email con el pitch de LeadForge.
+Corre cada día via GitHub Actions. No tiene nada que ver con la app LeadForge.
 """
 
 import os
 import json
 import time
+import re
 import requests
+from datetime import datetime
 
 BREVO_API_KEY  = os.environ["BREVO_API_KEY"]
 GMAPS_API_KEY  = os.environ["GMAPS_API_KEY"]
 MY_EMAIL       = os.environ.get("MY_EMAIL", "aquilesgbi@gmail.com")
-SENDER_EMAIL   = os.environ.get("SENDER_EMAIL", "aquilesgbi@gmail.com")
 SENT_FILE      = "sent_emails.json"
 MAX_PER_RUN    = 200
-CIUDAD         = "Madrid, España"
 
-# Sectores con alta probabilidad de querer LeadForge
+# Rotación diaria de ciudades — cada día busca en una ciudad diferente
+CIUDADES = [
+    "Madrid, España",
+    "Barcelona, España",
+    "Valencia, España",
+    "Sevilla, España",
+    "Bilbao, España",
+    "Málaga, España",
+    "Zaragoza, España",
+    "Murcia, España",
+    "Palma de Mallorca, España",
+    "Alicante, España",
+    "Granada, España",
+    "Córdoba, España",
+    "Valladolid, España",
+    "A Coruña, España",
+    "San Sebastián, España",
+    "Santander, España",
+    "Salamanca, España",
+    "Toledo, España",
+    "Burgos, España",
+    "Vigo, España",
+    "Lisboa, Portugal",
+    "Porto, Portugal",
+]
+
 TARGETS = [
     "agencia de marketing digital",
     "agencia inmobiliaria",
@@ -30,6 +55,14 @@ TARGETS = [
     "gestoría administrativa",
     "empresa de telecomunicaciones",
 ]
+
+# Dominios genéricos que no tienen inbox real
+DOMINIOS_INVALIDOS = {
+    "facebook.com", "instagram.com", "twitter.com", "linkedin.com",
+    "youtube.com", "google.com", "wix.com", "wordpress.com",
+    "blogspot.com", "weebly.com", "squarespace.com", "godaddy.com",
+    "1and1.es", "jimdo.com",
+}
 
 
 def load_sent():
@@ -44,6 +77,21 @@ def save_sent(sent):
         json.dump(list(sent), f)
 
 
+def dominio_valido(domain):
+    if not domain or len(domain) < 4 or "." not in domain:
+        return False
+    if domain in DOMINIOS_INVALIDOS:
+        return False
+    # Filtrar IPs
+    if re.match(r"^\d+\.\d+\.\d+\.\d+$", domain):
+        return False
+    # Filtrar dominios con solo números
+    partes = domain.split(".")[0]
+    if partes.isdigit():
+        return False
+    return True
+
+
 def search_gmaps(query, ciudad):
     leads = []
     url = "https://maps.googleapis.com/maps/api/place/textsearch/json"
@@ -56,21 +104,17 @@ def search_gmaps(query, ciudad):
                 continue
             detail = requests.get(
                 "https://maps.googleapis.com/maps/api/place/details/json",
-                params={"place_id": place_id, "fields": "name,formatted_phone_number,website,rating,user_ratings_total", "key": GMAPS_API_KEY},
+                params={"place_id": place_id, "fields": "name,website", "key": GMAPS_API_KEY},
                 timeout=10,
             ).json().get("result", {})
             website = detail.get("website", "")
             if not website:
                 continue
-            # Extraer email del dominio (simplificado)
-            domain = website.replace("https://", "").replace("http://", "").replace("www.", "").split("/")[0]
+            domain = website.replace("https://", "").replace("http://", "").replace("www.", "").split("/")[0].lower()
+            if not dominio_valido(domain):
+                continue
             email = f"info@{domain}"
-            leads.append({
-                "nombre":  p.get("name", ""),
-                "email":   email,
-                "web":     website,
-                "rating":  detail.get("rating", 0),
-            })
+            leads.append({"nombre": p.get("name", ""), "email": email, "web": website})
             time.sleep(0.2)
         next_token = r.get("next_page_token")
         if not next_token:
@@ -133,7 +177,7 @@ def build_email(nombre_empresa):
 
 def send_email(to_email, nombre_empresa):
     payload = {
-        "sender":      {"name": "Aquiles — LeadForge", "email": SENDER_EMAIL},
+        "sender":      {"name": "Aquiles — LeadForge", "email": "hola@leadforge.es"},
         "replyTo":     {"email": MY_EMAIL},
         "to":          [{"email": to_email}],
         "subject":     f"¿LeadForge puede ayudar a {nombre_empresa}?",
@@ -150,13 +194,18 @@ def send_email(to_email, nombre_empresa):
 
 
 def main():
+    # Rotación diaria de ciudad
+    dia = datetime.now().timetuple().tm_yday
+    ciudad = CIUDADES[dia % len(CIUDADES)]
+    print(f"[prospector] Ciudad de hoy: {ciudad}")
+
     sent = load_sent()
     print(f"[prospector] {len(sent)} emails ya enviados anteriormente")
 
     all_leads = []
     for target in TARGETS:
-        print(f"[prospector] Buscando: {target}")
-        leads = search_gmaps(target, CIUDAD)
+        print(f"[prospector] Buscando: {target} en {ciudad}")
+        leads = search_gmaps(target, ciudad)
         all_leads.extend(leads)
         time.sleep(1)
 
@@ -188,10 +237,11 @@ def main():
 
     # Resumen a ti mismo
     resumen = {
-        "sender": {"name": "LeadForge Prospector", "email": SENDER_EMAIL},
-        "to":     [{"email": MY_EMAIL}],
-        "subject": f"[Prospector] {enviados} emails enviados hoy",
-        "htmlContent": f"<p>Hoy el prospector envió <b>{enviados} emails</b> a potenciales clientes de LeadForge en Madrid.</p><p>Total acumulado contactados: {len(sent)}</p>",
+        "sender":      {"name": "LeadForge Prospector", "email": "hola@leadforge.es"},
+        "replyTo":     {"email": MY_EMAIL},
+        "to":          [{"email": MY_EMAIL}],
+        "subject":     f"[Prospector] {enviados} emails enviados hoy — {ciudad}",
+        "htmlContent": f"<p>Hoy el prospector buscó en <b>{ciudad}</b> y envió <b>{enviados} emails</b> a potenciales clientes de LeadForge.</p><p>Total acumulado contactados: {len(sent)}</p>",
     }
     requests.post(
         "https://api.brevo.com/v3/smtp/email",
