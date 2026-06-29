@@ -69,10 +69,10 @@ TARGET_LABEL = {
 
 # 4 asuntos rotativos — rotan por día para A/B natural y mejor deliverability
 SUBJECTS = [
-    "Clientes nuevos en {ciudad} — sin publicidad",
-    "{nombre}, hay contactos en {ciudad} esperándote",
-    "Cómo conseguir clientes en {ciudad} sin llamadas en frío",
-    "20 empresas en {ciudad} que podrían contratarte",
+    "Novos clientes em {ciudad} — sem publicidade",
+    "{nombre}, há contactos em {ciudad} à tua espera",
+    "Como conseguir clientes em {ciudad} sem chamadas a frio",
+    "20 empresas em {ciudad} que te poderiam contratar",
 ]
 
 # Dominios genéricos que no tienen inbox real
@@ -271,7 +271,7 @@ def search_gmaps(query, ciudad):
 def build_email(nombre_empresa, ciudad, sector_label):
     ciudad_corta = ciudad.split(",")[0]  # "Madrid, España" → "Madrid"
     return f"""<!DOCTYPE html>
-<html lang="es"><head><meta charset="UTF-8">
+<html lang="pt"><head><meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1"></head>
 <body style="margin:0;padding:0;background:#f4f6f9;font-family:'Helvetica Neue',Arial,sans-serif;">
 <table width="100%" cellpadding="0" cellspacing="0" style="background:#f4f6f9;padding:40px 16px;">
@@ -281,29 +281,29 @@ def build_email(nombre_empresa, ciudad, sector_label):
   <!-- CABECERA -->
   <tr><td style="background:linear-gradient(135deg,#0D1420,#1a2540);padding:24px 40px;">
     <h1 style="margin:0;color:#fff;font-size:19px;font-weight:700;letter-spacing:-0.3px;">⚡ LeadForge</h1>
-    <p style="margin:4px 0 0;color:rgba(255,255,255,0.5);font-size:12px;">Generación automática de leads B2B</p>
+    <p style="margin:4px 0 0;color:rgba(255,255,255,0.5);font-size:12px;">Geração automática de leads B2B</p>
   </td></tr>
 
   <!-- CUERPO -->
   <tr><td style="padding:36px 40px 28px;">
 
     <p style="margin:0 0 22px;font-size:15px;color:#111827;line-height:1.7;">
-      Hola,
+      Olá,
     </p>
 
     <p style="margin:0 0 18px;font-size:15px;color:#374151;line-height:1.8;">
-      La mayoría de empresas en <strong>{ciudad_corta}</strong> pierden clientes potenciales
-      cada semana porque no tienen tiempo de buscarlos uno a uno.
+      A maioria das empresas em <strong>{ciudad_corta}</strong> perde clientes potenciais
+      todas as semanas porque não tem tempo de os procurar um a um.
     </p>
 
     <p style="margin:0 0 18px;font-size:15px;color:#374151;line-height:1.8;">
-      LeadForge los encuentra automáticamente — nombre, email, teléfono y web
-      de cada empresa que podría contratarte — y los tiene listos en 30 segundos.
+      O LeadForge encontra-os automaticamente — nome, email, telefone e website
+      de cada empresa que te poderia contratar — e tem tudo pronto em 30 segundos.
     </p>
 
     <p style="margin:0 0 18px;font-size:15px;color:#374151;line-height:1.8;">
-      Si quieres verlo funcionar, aquí tienes una prueba gratuita con 20 leads reales de {ciudad_corta}:
-      <a href="https://cobraflow0.github.io/leadforge-app/app.html?demo=true" style="color:#0066FF;font-weight:600;">prueba LeadForge gratis</a>
+      Se quiseres ver como funciona, aqui tens uma prova gratuita com 20 leads reais de {ciudad_corta}:
+      <a href="https://cobraflow0.github.io/leadforge-app/app.html?demo=true" style="color:#0066FF;font-weight:600;">experimenta o LeadForge grátis</a>
     </p>
 
     <!-- CTA -->
@@ -311,23 +311,23 @@ def build_email(nombre_empresa, ciudad, sector_label):
       <tr><td style="background:linear-gradient(135deg,#0066FF,#0052cc);border-radius:8px;box-shadow:0 4px 16px rgba(0,102,255,0.3);">
         <a href="https://cobraflow0.github.io/leadforge-app/app.html?demo=true"
            style="display:inline-block;padding:15px 36px;color:#fff;text-decoration:none;font-weight:700;font-size:15px;letter-spacing:0.2px;">
-          Ver mis leads gratis →
+          Ver os meus leads grátis →
         </a>
       </td></tr>
     </table>
 
     <p style="margin:0 0 18px;font-size:15px;color:#374151;line-height:1.8;">
-      Un cliente consiguió 3 presupuestos nuevos el primer día de uso, sin llamadas en frío ni publicidad.
+      Um cliente conseguiu 3 orçamentos novos no primeiro dia de utilização, sem chamadas a frio nem publicidade.
     </p>
 
     <p style="margin:0 0 6px;font-size:14px;color:#6b7280;line-height:1.7;">
-      Planes desde <strong>19€/mes</strong>. Sin permanencia.
+      Planos a partir de <strong>19€/mês</strong>. Sem permanência.
     </p>
 
     <p style="margin:24px 0 0;font-size:14px;color:#374151;line-height:1.8;">
-      Un saludo,<br>
-      <strong>Aquiles</strong><br>
-      <span style="color:#9ca3af;font-size:13px;">Fundador · LeadForge · hola@leadforge.es</span>
+      Um abraço,<br>
+      <strong>Pablo</strong><br>
+      <span style="color:#9ca3af;font-size:13px;">LeadForge · hola@leadforge.es</span>
     </p>
 
   </td></tr>
@@ -335,7 +335,7 @@ def build_email(nombre_empresa, ciudad, sector_label):
   <!-- PIE -->
   <tr><td style="background:#f9fafb;padding:14px 40px;border-top:1px solid #e5e7eb;text-align:center;">
     <p style="margin:0;font-size:11px;color:#9ca3af;line-height:1.6;">
-      ¿No es para ti? Responde a este email y no volvemos a escribirte.
+      Não é para si? Responda a este email e não voltamos a contactá-lo.
     </p>
   </td></tr>
 
@@ -358,7 +358,7 @@ def send_email(to_email, nombre_empresa, ciudad, sector_label, dia):
         ciudad=ciudad_corta,
     )
     payload = {
-        "sender":      {"name": "Aquiles — LeadForge", "email": "hola@leadforge.es"},
+        "sender":      {"name": "Pablo — LeadForge", "email": "hola@leadforge.es"},
         "replyTo":     {"email": MY_EMAIL},
         "to":          [{"email": to_email}],
         "subject":     subject,
