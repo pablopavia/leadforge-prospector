@@ -155,9 +155,9 @@ def build_email(nombre_empresa):
     </p>
     <table cellpadding="0" cellspacing="0" style="margin:0 auto 24px;">
       <tr><td style="background:linear-gradient(135deg,#0066FF,#00C8FF);border-radius:8px;">
-        <a href="https://cobraflow0.github.io/leadforge-app/index.html"
+        <a href="https://cobraflow0.github.io/leadforge-app/app.html?demo=true"
            style="display:inline-block;padding:13px 28px;color:#fff;text-decoration:none;font-weight:700;font-size:15px;">
-          Ver LeadForge gratis →
+          Prueba LeadForge gratis — busca tus leads →
         </a>
       </td></tr>
     </table>
